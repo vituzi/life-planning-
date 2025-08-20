@@ -1,0 +1,2051 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Progress } from './ui/progress';
+import { Badge } from './ui/badge';
+import { Plus, Award, Target, BookOpen } from 'lucide-react';
+import {
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer
+} from 'recharts';
+
+const skillsData = [
+  { skill: 'Leadership', current: 75, target: 90 },
+  { skill: 'Technical', current: 85, target: 95 },
+  { skill: 'Communication', current: 80, target: 90 },
+  { skill: 'Problem Solving', current: 90, target: 95 },
+  { skill: 'Project Management', current: 70, target: 85 },
+  { skill: 'Strategy', current: 65, target: 80 },
+];
+
+export function CareerSection() {
+  const [goals, setGoals] = useState([
+    { id: 1, title: 'Get promoted to Senior Developer', progress: 70, deadline: '2025-12-31' },
+    { id: 2, title: 'Complete AWS certification', progress: 45, deadline: '2025-09-30' },
+    { id: 3, title: 'Lead a team project', progress: 90, deadline: '2025-08-15' },
+    { id: 4, title: 'Speak at tech conference', progress: 30, deadline: '2025-11-01' },
+  ]);
+
+  const [achievements, setAchievements] = useState([
+    { id: 1, title: 'Completed React Advanced Course', date: '2025-07-15', type: 'Learning' },
+    { id: 2, title: 'Led successful product launch', date: '2025-06-30', type: 'Project' },
+    { id: 3, title: 'Mentored 2 junior developers', date: '2025-06-01', type: 'Leadership' },
+    { id: 4, title: 'Received performance bonus', date: '2025-05-15', type: 'Recognition' },
+  ]);
+
+  const [newGoal, setNewGoal] = useState('');
+  const [newDeadline, setNewDeadline] = useState('');
+  const [newAchievement, setNewAchievement] = useState('');
+
+  const addGoal = () => {
+    if (newGoal.trim() && newDeadline) {
+      setGoals([...goals, {
+        id: Date.now(),
+        title: newGoal,
+        progress: 0,
+        deadline: newDeadline
+      }]);
+      setNewGoal('');
+      setNewDeadline('');
+    }
+  };
+
+  const addAchievement = () => {
+    if (newAchievement.trim()) {
+      setAchievements([{
+        id: Date.now(),
+        title: newAchievement,
+        date: new Date().toISOString().split('T')[0],
+        type: 'General'
+      }, ...achievements]);
+      setNewAchievement('');
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'Learning': return 'bg-blue-500/10 text-blue-500';
+      case 'Project': return 'bg-green-500/10 text-green-500';
+      case 'Leadership': return 'bg-purple-500/10 text-purple-500';
+      case 'Recognition': return 'bg-yellow-500/10 text-yellow-500';
+      default: return 'bg-gray-500/10 text-gray-500';
+    }
+  };
+
+  return (
+    <motion.div
+      className="p-6 space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Career Dashboard</h1>
+          <p className="text-muted-foreground">Track your professional trajectory</p>
+        </div>
+      </div>
+
+      {/* Career Goals */}
+      <Card className="glass shadow-lg border border-muted/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <motion.div whileHover={{ rotate: 15 }}>
+              <Target className="h-5 w-5 text-primary" />
+            </motion.div>
+            Career Goals
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Input
+              placeholder="Set a new career goal..."
+              value={newGoal}
+              onChange={(e) => setNewGoal(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <Input
+                type="date"
+                value={newDeadline}
+                onChange={(e) => setNewDeadline(e.target.value)}
+              />
+              <Button onClick={addGoal} className="hover:scale-105 transition-transform">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {goals.map((goal) => (
+              <motion.div
+                key={goal.id}
+                className="p-3 bg-muted/10 rounded-lg shadow-sm hover:shadow-md transition"
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <p className="font-medium text-foreground">{goal.title}</p>
+                  <span className="text-xs text-muted-foreground">
+                    Due: {new Date(goal.deadline).toLocaleDateString()}
+                  </span>
+                </div>
+                <Progress value={goal.progress} />
+                <div className="text-sm text-right text-muted-foreground mt-1">
+                  {goal.progress}%
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Skills Development */}
+      <Card className="glass shadow-lg border border-muted/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <motion.div whileHover={{ rotate: -15 }}>
+              <BookOpen className="h-5 w-5 text-primary" />
+            </motion.div>
+            Skills Radar
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <RadarChart data={skillsData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey="skill" />
+              <PolarRadiusAxis angle={90} domain={[0, 100]} />
+              <Radar
+                name="Current"
+                dataKey="current"
+                stroke="#6366f1"
+                fill="#6366f1"
+                fillOpacity={0.2}
+              />
+              <Radar
+                name="Target"
+                dataKey="target"
+                stroke="#10b981"
+                strokeDasharray="4 4"
+                fill="transparent"
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Metrics & Achievements */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Career Metrics */}
+        <Card className="glass border border-muted/30 shadow-md">
+          <CardHeader>
+            <CardTitle>Career Stats</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-4">
+            {[
+              ['Years Experience', '3.5'],
+              ['Completed Projects', '12'],
+              ['Certifications', '8'],
+              ['Performance Rating', '4.8'],
+            ].map(([label, value]) => (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="text-center bg-muted/5 border border-border rounded-lg p-4"
+                key={label}
+              >
+                <div className="text-2xl font-semibold">{value}</div>
+                <p className="text-xs text-muted-foreground">{label}</p>
+              </motion.div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Achievements */}
+        <Card className="glass shadow-md border border-muted/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <motion.div whileHover={{ rotate: 10 }}>
+                <Award className="h-5 w-5 text-primary" />
+              </motion.div>
+              Achievements
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Textarea
+                placeholder="Add a new achievement..."
+                value={newAchievement}
+                onChange={(e) => setNewAchievement(e.target.value)}
+                rows={2}
+              />
+              <Button onClick={addAchievement} className="self-end hover:scale-105 transition-transform">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {achievements.map((achievement) => (
+                <motion.div
+                  key={achievement.id}
+                  className="p-3 bg-muted/10 rounded-lg border border-border"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <div className="flex justify-between mb-1">
+                    <p className="font-medium">{achievement.title}</p>
+                    <Badge className={getTypeColor(achievement.type)}>
+                      {achievement.type}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{achievement.date}</p>
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </motion.div>
+  );
+}
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Progress } from './ui/progress';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell,
+} from 'recharts';
+import { motion } from 'framer-motion';
+import { Activity, PlusCircle, Sparkles, BarChartBig, PieChart as PieIcon } from 'lucide-react';
+
+const monthlyProgress = [
+  { month: 'Jan', health: 65, spiritual: 70, finance: 80, career: 75 },
+  { month: 'Feb', health: 70, spiritual: 75, finance: 85, career: 80 },
+  { month: 'Mar', health: 75, spiritual: 80, finance: 82, career: 85 },
+  { month: 'Apr', health: 80, spiritual: 85, finance: 88, career: 90 },
+  { month: 'May', health: 78, spiritual: 82, finance: 90, career: 85 },
+  { month: 'Jun', health: 85, spiritual: 88, finance: 92, career: 88 },
+  { month: 'Jul', health: 82, spiritual: 85, finance: 88, career: 90 },
+];
+
+const goalCompletion = [
+  { name: 'Health', value: 82, color: '#ef4444' },
+  { name: 'Spiritual', value: 85, color: '#8b5cf6' },
+  { name: 'Finance', value: 88, color: '#10b981' },
+  { name: 'Career', value: 90, color: '#f59e0b' },
+];
+
+export function Dashboard() {
+  const [visionItems, setVisionItems] = useState([
+    {
+      title: 'Get Dream Internship',
+      image: '💼',
+      description: 'Land a role at Google or Pinterest.',
+    },
+    {
+      title: 'Travel to Italy',
+      image: '🇮🇹',
+      description: 'Celebrate the year with a Rome trip.',
+    },
+  ]);
+
+  const [newItem, setNewItem] = useState({ title: '', image: '', description: '' });
+
+  const addVisionItem = () => {
+    if (newItem.title.trim()) {
+      setVisionItems([...visionItems, newItem]);
+      setNewItem({ title: '', image: '', description: '' });
+    }
+  };
+
+  return (
+    <motion.div className="p-6 space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard Overview</h1>
+          <p className="text-muted-foreground">Track your holistic growth for {new Date().getFullYear()}</p>
+        </div>
+        <motion.div whileHover={{ rotate: 10 }} className="text-primary">
+          <Sparkles className="w-6 h-6" />
+        </motion.div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {goalCompletion.map((area) => (
+          <motion.div whileHover={{ scale: 1.03 }} key={area.name} className="rounded-xl shadow-md bg-background/70 backdrop-blur-sm border border-border/20">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">{area.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{area.value}%</div>
+                <Progress value={area.value} className="mt-2" />
+                <p className="text-xs text-muted-foreground mt-1">Year progress</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div whileHover={{ scale: 1.01 }} className="rounded-xl border border-border/20 bg-background/60 backdrop-blur">
+          <Card>
+            <CardHeader className="flex items-center gap-2">
+              <BarChartBig className="w-5 h-5 text-primary" />
+              <CardTitle>Monthly Progress Trends</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={monthlyProgress}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="health" stroke="#ef4444" strokeWidth={2} />
+                  <Line type="monotone" dataKey="spiritual" stroke="#8b5cf6" strokeWidth={2} />
+                  <Line type="monotone" dataKey="finance" stroke="#10b981" strokeWidth={2} />
+                  <Line type="monotone" dataKey="career" stroke="#f59e0b" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div whileHover={{ scale: 1.01 }} className="rounded-xl border border-border/20 bg-background/60 backdrop-blur">
+          <Card>
+            <CardHeader className="flex items-center gap-2">
+              <PieIcon className="w-5 h-5 text-primary" />
+              <CardTitle>Goal Completion Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={goalCompletion}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {goalCompletion.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Vision Board */}
+      <motion.div whileHover={{ scale: 1.01 }} className="rounded-xl border border-border/20 bg-background/70 backdrop-blur">
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <CardTitle>Vision Board</CardTitle>
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={addVisionItem}
+              className="text-sm flex items-center gap-1 text-primary hover:underline"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Add
+            </motion.button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {visionItems.map((item, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.03 }}
+                  className="p-4 border rounded-xl shadow-sm bg-muted/20"
+                >
+                  <div className="text-4xl">{item.image}</div>
+                  <h3 className="font-semibold mt-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+            <div className="mt-6 space-y-2">
+              <input
+                type="text"
+                placeholder="Vision Title"
+                value={newItem.title}
+                onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                className="w-full p-2 text-sm border rounded-md bg-background/80"
+              />
+              <input
+                type="text"
+                placeholder="Emoji or Image URL"
+                value={newItem.image}
+                onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
+                className="w-full p-2 text-sm border rounded-md bg-background/80"
+              />
+              <textarea
+                placeholder="Description"
+                value={newItem.description}
+                onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                className="w-full p-2 text-sm border rounded-md bg-background/80"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Activities */}
+      <motion.div whileHover={{ scale: 1.01 }} className="rounded-xl border border-border/20 bg-background/60 backdrop-blur">
+        <Card>
+          <CardHeader className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-primary" />
+            <CardTitle>Recent Activities</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                { area: 'Health', activity: 'Completed 5 gym sessions this week', time: '2 hours ago' },
+                { area: 'Career', activity: 'Finished React certification course', time: '1 day ago' },
+                { area: 'Finance', activity: 'Added $500 to emergency fund', time: '2 days ago' },
+                { area: 'Spiritual', activity: 'Completed 7-day meditation streak', time: '3 days ago' },
+              ].map((item, index) => (
+                <motion.div key={index} whileHover={{ x: 4 }} className="flex justify-between border-b py-2">
+                  <div>
+                    <p className="font-medium">{item.area}</p>
+                    <p className="text-sm text-muted-foreground">{item.activity}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{item.time}</span>
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Progress } from './ui/progress';
+import { Plus, Target, Activity } from 'lucide-react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
+
+const healthData = [
+  { month: 'Jan', workouts: 18, weight: 175, sleep: 7.2 },
+  { month: 'Feb', workouts: 22, weight: 173, sleep: 7.5 },
+  { month: 'Mar', workouts: 20, weight: 171, sleep: 7.8 },
+  { month: 'Apr', workouts: 25, weight: 169, sleep: 8.0 },
+  { month: 'May', workouts: 23, weight: 168, sleep: 7.9 },
+  { month: 'Jun', workouts: 27, weight: 166, sleep: 8.1 },
+  { month: 'Jul', workouts: 24, weight: 165, sleep: 8.2 },
+];
+
+export function HealthSection() {
+  const [goals, setGoals] = useState([
+    { id: 1, title: 'Workout 4x per week', progress: 75, target: 100 },
+    { id: 2, title: 'Lose 15 pounds', progress: 60, target: 100 },
+    { id: 3, title: 'Sleep 8 hours nightly', progress: 85, target: 100 },
+    { id: 4, title: 'Drink 8 glasses of water daily', progress: 90, target: 100 },
+  ]);
+
+  const [newGoal, setNewGoal] = useState('');
+
+  const addGoal = () => {
+    if (newGoal.trim()) {
+      setGoals([...goals, {
+        id: Date.now(),
+        title: newGoal,
+        progress: 0,
+        target: 100
+      }]);
+      setNewGoal('');
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1>Health &amp; Fitness</h1>
+          <p className="text-muted-foreground">
+            Track your physical wellness and fitness goals
+          </p>
+        </div>
+      </div>
+
+      {/* Goal Setting */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Health Goals
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Add a new health goal..."
+              value={newGoal}
+              onChange={(e) => setNewGoal(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addGoal()}
+            />
+            <Button onClick={addGoal}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="space-y-3">
+            {goals.map((goal) => (
+              <div key={goal.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                <div className="flex-1">
+                  <p className="font-medium">{goal.title}</p>
+                  <Progress value={goal.progress} className="mt-2" />
+                </div>
+                <div className="ml-4 text-right">
+                  <span className="text-sm font-medium">{goal.progress}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Health Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">This Month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">24</div>
+            <p className="text-xs text-muted-foreground">Workouts completed</p>
+            <div className="flex items-center mt-2 text-sm text-green-600">
+              <Activity className="h-3 w-3 mr-1" />
+              +3 from last month
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Current Weight</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">165 lbs</div>
+            <p className="text-xs text-muted-foreground">Target: 160 lbs</p>
+            <div className="flex items-center mt-2 text-sm text-green-600">
+              <Activity className="h-3 w-3 mr-1" />
+              -10 lbs this year
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Avg Sleep</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">8.2 hrs</div>
+            <p className="text-xs text-muted-foreground">Last 7 days</p>
+            <div className="flex items-center mt-2 text-sm text-green-600">
+              <Activity className="h-3 w-3 mr-1" />
+              +0.5 hrs improved
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Health Progress Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Health Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={healthData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="workouts" fill="#ef4444" name="Workouts" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}import { useState } from 'react';
+import { Button } from './ui/button';
+import {
+  Home,
+  Heart,
+  Sparkles,
+  DollarSign,
+  Briefcase,
+  CheckSquare,
+  TrendingUp
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface SidebarProps {
+  activeSection: string;
+  onSectionChange: (section: string) => void;
+}
+
+const navigationItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: Home },
+  { id: 'health', label: 'Health', icon: Heart },
+  { id: 'spiritual', label: 'Spiritual', icon: Sparkles },
+  { id: 'finance', label: 'Finances', icon: DollarSign },
+  { id: 'career', label: 'Career', icon: Briefcase },
+  { id: 'todo', label: 'Monthly Tasks', icon: CheckSquare },
+  { id: 'review', label: 'Year Review', icon: TrendingUp },
+];
+
+export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      {/* Floating Home Button */}
+      <motion.div
+        className="fixed top-2 left-2 z-50"
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <Button onClick={() => setIsOpen(!isOpen)} variant="ghost" className="text-primary p-2 rounded-full bg-background/60">
+          <Home className="w-6 h-6" />
+        </Button>
+      </motion.div>
+
+      {/* Sidebar Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="sidebar"
+            initial={{ x: -300, opacity: 0.7 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed inset-y-0 left-0 w-64 bg-gradient-to-br from-[#1c1c1c]/80 to-[#2c2c2c]/80 backdrop-blur-md border-r border-border p-6 shadow-lg z-40"
+          >
+            {/* Branding */}
+            <div className="mb-10">
+              <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+                ✦ <span className="gradient-text">LifePlanner</span>
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                Curate your year with intention
+              </p>
+            </div>
+
+            {/* Navigation */}
+            <nav className="space-y-2 flex-1">
+              {navigationItems.map(({ id, label, icon: Icon }) => {
+                const isActive = activeSection === id;
+                return (
+                  <motion.div
+                    key={id}
+                    initial={{ translateX: isActive ? 0 : 0 }}
+                    animate={isActive ? { boxShadow: '0 0 10px rgba(128,0,255,0.6)' } : {}}
+                    transition={{ repeat: isActive ? Infinity : 0, repeatType: 'mirror', duration: 1.5 }}
+                  >
+                    <Button
+                      variant="ghost"
+                      onClick={() => { onSectionChange(id); setIsOpen(false); }}
+                      className={`w-full flex justify-start gap-3 px-4 py-2 rounded-lg transition-all text-sm font-medium group relative overflow-hidden ${
+                        isActive
+                          ? 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 text-white'
+                          : 'hover:bg-white/5 hover:text-white text-muted-foreground'
+                      }`}
+                    >
+                      <Icon
+                        className={`h-5 w-5 transition-transform duration-200 ${
+                          isActive
+                            ? 'scale-110 text-purple-400'
+                            : 'group-hover:text-white group-hover:scale-105'
+                        }`}
+                      />
+                      <span>{label}</span>
+                      {isActive && (
+                        <span className="absolute left-0 top-0 h-full w-[3px] bg-purple-400 rounded-r-full"></span>
+                      )}
+                    </Button>
+                  </motion.div>
+                );
+              })}
+            </nav>
+
+            {/* Footer */}
+            <div className="pt-6 border-t border-border mt-auto">
+              <p className="text-[11px] text-muted-foreground tracking-wide">
+                {new Date().getFullYear()} — Designed for growth 🌱
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+import { useState } from 'react';
+import {
+  Card, CardContent, CardHeader, CardTitle,
+} from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Progress } from './ui/progress';
+import {
+  Plus, Heart, Book, Sparkles, Lightbulb, Trash2,
+} from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import clsx from 'clsx';
+
+const spiritualData = [
+  { month: 'Jan', meditation: 15, prayer: 20, reading: 8 },
+  { month: 'Feb', meditation: 18, prayer: 25, reading: 10 },
+  { month: 'Mar', meditation: 22, prayer: 28, reading: 12 },
+  { month: 'Apr', meditation: 25, prayer: 30, reading: 15 },
+  { month: 'May', meditation: 23, prayer: 27, reading: 13 },
+  { month: 'Jun', meditation: 28, prayer: 31, reading: 16 },
+  { month: 'Jul', meditation: 26, prayer: 29, reading: 14 },
+];
+
+export function SpiritualSection() {
+  const [practices, setPractices] = useState([
+    { id: 1, title: 'Daily meditation (20 min)', progress: 85 },
+    { id: 2, title: 'Weekly spiritual reading', progress: 70 },
+    {id: 3, title: 'Sermons', progress: 65}
+  ]);
+
+  const [reflections, setReflections] = useState([
+    { id: 1, date: '2025-07-20', content: 'Felt more centered after meditation.' },
+  ]);
+
+  const [visionBoard, setVisionBoard] = useState([
+    { id: 1, goal: 'Live in alignment', quote: 'Peace begins with me.' },
+    { id: 2, goal: 'Give back monthly', quote: 'Service is the rent we pay.' },
+  ]);
+
+  const [newPractice, setNewPractice] = useState('');
+  const [newReflection, setNewReflection] = useState('');
+  const [newVisionGoal, setNewVisionGoal] = useState('');
+  const [newVisionQuote, setNewVisionQuote] = useState('');
+
+  const addPractice = () => {
+    if (!newPractice.trim()) return;
+    setPractices([...practices, {
+      id: Date.now(), title: newPractice, progress: 0,
+    }]);
+    setNewPractice('');
+  };
+
+  const addReflection = () => {
+    if (!newReflection.trim()) return;
+    setReflections([{
+      id: Date.now(),
+      date: new Date().toISOString().split('T')[0],
+      content: newReflection,
+    }, ...reflections]);
+    setNewReflection('');
+  };
+
+  const addVisionCard = () => {
+    if (!newVisionGoal.trim()) return;
+    setVisionBoard([...visionBoard, {
+      id: Date.now(),
+      goal: newVisionGoal,
+      quote: newVisionQuote,
+    }]);
+    setNewVisionGoal('');
+    setNewVisionQuote('');
+  };
+
+  const deleteVisionCard = (id: number) => {
+    setVisionBoard(visionBoard.filter((card) => card.id !== id));
+  };
+
+  return (
+    <div className="p-6 space-y-6 font-sans">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">🧘‍♀️ Spiritual Dashboard</h1>
+          <p className="text-muted-foreground text-sm">Nurture your soul through mindful practice</p>
+        </div>
+      </div>
+
+      {/* Spiritual Practices */}
+      <Card className="border border-muted shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Sparkles className="h-5 w-5 text-purple-500 animate-pulse" />
+            Spiritual Practices
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Add spiritual habit..."
+              value={newPractice}
+              onChange={(e) => setNewPractice(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addPractice()}
+            />
+            <Button onClick={addPractice} variant="ghost">
+              <Plus />
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {practices.map((practice) => (
+              <div
+                key={practice.id}
+                className="flex items-center justify-between bg-muted p-3 rounded-lg border border-border"
+              >
+                <p className="font-medium">{practice.title}</p>
+                <Progress value={practice.progress} className="w-1/2 mx-4" />
+                <span className="text-sm text-muted-foreground">{practice.progress}%</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="hover:shadow-lg transition">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs uppercase text-muted-foreground">Meditation Streak</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">26 days</p>
+            <p className="text-xs text-muted-foreground">Current streak</p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs uppercase text-muted-foreground">Books Read</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">14</p>
+            <p className="text-xs text-muted-foreground">This year</p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs uppercase text-muted-foreground">Service Hours</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">42 hrs</p>
+            <p className="text-xs text-muted-foreground">This year</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Line Chart + Reflections */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>📊 Monthly Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={spiritualData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="meditation" stroke="#8b5cf6" />
+                <Line type="monotone" dataKey="prayer" stroke="#ec4899" />
+                <Line type="monotone" dataKey="reading" stroke="#06b6d4" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>🪞 Reflections</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              placeholder="Write your spiritual reflection..."
+              value={newReflection}
+              onChange={(e) => setNewReflection(e.target.value)}
+              rows={3}
+            />
+            <Button onClick={addReflection} className="w-full">Add Reflection</Button>
+            <div className="max-h-60 overflow-y-auto space-y-3">
+              {reflections.map((r) => (
+                <div key={r.id} className="p-3 border rounded-lg text-sm">
+                  <p className="text-muted-foreground mb-1">{r.date}</p>
+                  <p>{r.content}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ✨ Vision Board */}
+      <Card className="border border-border bg-white/80 backdrop-blur-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lightbulb className="text-yellow-400" />
+            Vision Board
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col md:flex-row gap-2">
+            <Input
+              placeholder="Goal or vision"
+              value={newVisionGoal}
+              onChange={(e) => setNewVisionGoal(e.target.value)}
+            />
+            <Input
+              placeholder="Optional mantra or quote"
+              value={newVisionQuote}
+              onChange={(e) => setNewVisionQuote(e.target.value)}
+            />
+            <Button onClick={addVisionCard} variant="default">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {visionBoard.map((card) => (
+              <div
+                key={card.id}
+                className="relative bg-gradient-to-br from-purple-100 to-white p-4 rounded-lg border shadow group"
+              >
+                <p className="font-semibold text-lg">{card.goal}</p>
+                {card.quote && (
+                  <p className="text-muted-foreground text-sm italic mt-1">“{card.quote}”</p>
+                )}
+                <button
+                  onClick={() => deleteVisionCard(card.id)}
+                  className="absolute top-2 right-2 text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Checkbox } from './ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Badge } from './ui/badge';
+import { Plus, Calendar, CheckSquare, Clock, Trash2 } from 'lucide-react';
+
+interface Task {
+  id: number;
+  title: string;
+  category: 'Health' | 'Spiritual' | 'Finance' | 'Career' | 'Personal';
+  completed: boolean;
+  dueDate: string;
+  priority: 'Low' | 'Medium' | 'High';
+}
+
+export function TodoSection() {
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: 1, title: 'Complete quarterly health checkup', category: 'Health', completed: false, dueDate: '2025-07-30', priority: 'High' },
+    { id: 2, title: 'Read "The Power of Now" chapter 5-8', category: 'Spiritual', completed: true, dueDate: '2025-07-25', priority: 'Medium' },
+    { id: 3, title: 'Review and update investment portfolio', category: 'Finance', completed: false, dueDate: '2025-07-28', priority: 'High' },
+    { id: 4, title: 'Complete AWS Lambda certification module', category: 'Career', completed: false, dueDate: '2025-07-31', priority: 'Medium' },
+    { id: 5, title: 'Plan summer vacation budget', category: 'Finance', completed: true, dueDate: '2025-07-20', priority: 'Low' },
+    { id: 6, title: 'Weekly meal prep for healthy eating', category: 'Health', completed: false, dueDate: '2025-07-26', priority: 'Medium' },
+  ]);
+
+  const [newTask, setNewTask] = useState('');
+  const [newCategory, setNewCategory] = useState<Task['category']>('Personal');
+  const [newDueDate, setNewDueDate] = useState('');
+  const [newPriority, setNewPriority] = useState<Task['priority']>('Medium');
+  const [filter, setFilter] = useState<'All' | Task['category']>('All');
+
+  const addTask = () => {
+    if (newTask.trim() && newDueDate) {
+      setTasks([...tasks, {
+        id: Date.now(),
+        title: newTask,
+        category: newCategory,
+        completed: false,
+        dueDate: newDueDate,
+        priority: newPriority
+      }]);
+      setNewTask('');
+      setNewDueDate('');
+    }
+  };
+
+  const toggleTask = (id: number) => {
+    setTasks(tasks.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  };
+
+  const deleteTask = (id: number) => {
+    setTasks(tasks.filter(task => task.id !== id));
+  };
+
+  const filteredTasks = filter === 'All' 
+    ? tasks 
+    : tasks.filter(task => task.category === filter);
+
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const totalTasks = tasks.length;
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  const getCategoryColor = (category: Task['category']) => {
+    switch (category) {
+      case 'Health': return 'bg-red-100 text-red-800';
+      case 'Spiritual': return 'bg-purple-100 text-purple-800';
+      case 'Finance': return 'bg-green-100 text-green-800';
+      case 'Career': return 'bg-blue-100 text-blue-800';
+      case 'Personal': return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityColor = (priority: Task['priority']) => {
+    switch (priority) {
+      case 'High': return 'bg-red-100 text-red-800';
+      case 'Medium': return 'bg-yellow-100 text-yellow-800';
+      case 'Low': return 'bg-green-100 text-green-800';
+    }
+  };
+
+  const isOverdue = (dueDate: string) => {
+    return new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString();
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1>Monthly Tasks</h1>
+          <p className="text-muted-foreground">
+            Manage your monthly to-do list across all life areas
+          </p>
+        </div>
+      </div>
+
+      {/* Task Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CheckSquare className="h-4 w-4" />
+              Completion Rate
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{completionRate}%</div>
+            <p className="text-xs text-muted-foreground">
+              {completedTasks} of {totalTasks} tasks
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Pending Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTasks - completedTasks}</div>
+            <p className="text-xs text-muted-foreground">
+              Tasks remaining
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Due Today
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {tasks.filter(task => !task.completed && task.dueDate === new Date().toISOString().split('T')[0]).length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Tasks due today
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Overdue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {tasks.filter(task => !task.completed && isOverdue(task.dueDate)).length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Tasks overdue
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add New Task */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            Add New Task
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <Input
+              placeholder="Task description..."
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              className="md:col-span-2"
+            />
+            <Select value={newCategory} onValueChange={(value) => setNewCategory(value as Task['category'])}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Health">Health</SelectItem>
+                <SelectItem value="Spiritual">Spiritual</SelectItem>
+                <SelectItem value="Finance">Finance</SelectItem>
+                <SelectItem value="Career">Career</SelectItem>
+                <SelectItem value="Personal">Personal</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={newPriority} onValueChange={(value) => setNewPriority(value as Task['priority'])}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                type="date"
+                value={newDueDate}
+                onChange={(e) => setNewDueDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <Button onClick={addTask} className="w-full">
+            Add Task
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Task List */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Tasks</CardTitle>
+            <Select value={filter} onValueChange={(value) => setFilter(value as typeof filter)}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Categories</SelectItem>
+                <SelectItem value="Health">Health</SelectItem>
+                <SelectItem value="Spiritual">Spiritual</SelectItem>
+                <SelectItem value="Finance">Finance</SelectItem>
+                <SelectItem value="Career">Career</SelectItem>
+                <SelectItem value="Personal">Personal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {filteredTasks.map((task) => (
+              <div 
+                key={task.id} 
+                className={`flex items-center justify-between p-3 border border-border rounded-lg ${
+                  task.completed ? 'opacity-60' : ''
+                } ${isOverdue(task.dueDate) && !task.completed ? 'border-red-300 bg-red-50' : ''}`}
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <Checkbox
+                    checked={task.completed}
+                    onCheckedChange={() => toggleTask(task.id)}
+                  />
+                  <div className="flex-1">
+                    <p className={`font-medium ${task.completed ? 'line-through' : ''}`}>
+                      {task.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge className={getCategoryColor(task.category)} variant="secondary">
+                        {task.category}
+                      </Badge>
+                      <Badge className={getPriorityColor(task.priority)} variant="secondary">
+                        {task.priority}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Due: {new Date(task.dueDate).toLocaleDateString()}
+                        {isOverdue(task.dueDate) && !task.completed && (
+                          <span className="text-red-600 ml-1">(Overdue)</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteTask(task.id)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            {filteredTasks.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No tasks found for the selected filter.
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { 
+  TrendingUp, 
+  Award, 
+  Target, 
+  AlertTriangle, 
+  CheckCircle,
+  Calendar,
+  BarChart3
+} from 'lucide-react';
+import { 
+  RadialBarChart, 
+  RadialBar, 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip
+} from 'recharts';
+
+const yearlyProgress = [
+  { area: 'Health', progress: 82, color: '#ef4444' },
+  { area: 'Spiritual', progress: 85, color: '#8b5cf6' },
+  { area: 'Finance', progress: 88, color: '#10b981' },
+  { area: 'Career', progress: 90, color: '#f59e0b' },
+];
+
+const monthlyCompletion = [
+  { month: 'Jan', completion: 65 },
+  { month: 'Feb', completion: 72 },
+  { month: 'Mar', completion: 78 },
+  { month: 'Apr', completion: 85 },
+  { month: 'May', completion: 82 },
+  { month: 'Jun', completion: 88 },
+  { month: 'Jul', completion: 85 },
+  { month: 'Aug', completion: 0 },
+  { month: 'Sep', completion: 0 },
+  { month: 'Oct', completion: 0 },
+  { month: 'Nov', completion: 0 },
+  { month: 'Dec', completion: 0 },
+];
+
+const accomplishments = [
+  {
+    category: 'Health',
+    items: [
+      'Lost 10 pounds and reached target weight',
+      'Completed first half marathon',
+      'Established consistent workout routine (4x/week)',
+      'Improved sleep quality to 8+ hours nightly'
+    ]
+  },
+  {
+    category: 'Spiritual',
+    items: [
+      'Maintained 26-day meditation streak',
+      'Read 14 spiritual development books',
+      'Volunteered 42 hours for community service',
+      'Completed mindfulness retreat'
+    ]
+  },
+  {
+    category: 'Finance',
+    items: [
+      'Increased savings rate to 71.4%',
+      'Built emergency fund to $15,000',
+      'Invested additional $25,000 in retirement',
+      'Reduced monthly expenses by 15%'
+    ]
+  },
+  {
+    category: 'Career',
+    items: [
+      'Completed AWS certification',
+      'Led successful product launch',
+      'Received performance bonus and promotion',
+      'Mentored 2 junior developers'
+    ]
+  }
+];
+
+const areasForImprovement = [
+  {
+    category: 'Health',
+    items: [
+      'Need more consistency in weekend workouts',
+      'Improve nutrition tracking and meal planning',
+      'Add more variety to exercise routine'
+    ]
+  },
+  {
+    category: 'Spiritual',
+    items: [
+      'Set aside more time for quiet reflection',
+      'Engage more with spiritual community',
+      'Practice gratitude journaling more consistently'
+    ]
+  },
+  {
+    category: 'Finance',
+    items: [
+      'Research and diversify investment portfolio',
+      'Create detailed budget for home purchase',
+      'Learn more about tax optimization strategies'
+    ]
+  },
+  {
+    category: 'Career',
+    items: [
+      'Improve public speaking and presentation skills',
+      'Network more within the industry',
+      'Develop expertise in emerging technologies'
+    ]
+  }
+];
+
+export function YearReview() {
+  const currentYear = new Date().getFullYear();
+  const overallProgress = Math.round(yearlyProgress.reduce((acc, item) => acc + item.progress, 0) / yearlyProgress.length);
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1>Year {currentYear} Review</h1>
+          <p className="text-muted-foreground">
+            Reflect on your accomplishments and plan for improvement
+          </p>
+        </div>
+      </div>
+
+      {/* Overall Progress */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Overall Year Progress
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary">{overallProgress}%</div>
+                <p className="text-muted-foreground">Overall Progress</p>
+              </div>
+              {yearlyProgress.map((item) => (
+                <div key={item.area} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{item.area}</span>
+                    <span className="text-sm text-muted-foreground">{item.progress}%</span>
+                  </div>
+                  <Progress value={item.progress} className="h-2" />
+                </div>
+              ))}
+            </div>
+            <div>
+              <ResponsiveContainer width="100%" height={250}>
+                <RadialBarChart data={yearlyProgress} innerRadius="30%" outerRadius="80%">
+                  <RadialBar dataKey="progress" cornerRadius={10} fill="#8884d8" />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Monthly Completion Trend */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Monthly Completion Trend
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={monthlyCompletion}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="completion" fill="#3b82f6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Accomplishments */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5" />
+            Key Accomplishments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {accomplishments.map((category) => (
+              <div key={category.category} className="space-y-3">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  {category.category}
+                </h3>
+                <ul className="space-y-2">
+                  {category.items.map((item, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
+                      <span className="text-sm">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Areas for Improvement */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Areas for Improvement
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {areasForImprovement.map((category) => (
+              <div key={category.category} className="space-y-3">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-600" />
+                  {category.category}
+                </h3>
+                <ul className="space-y-2">
+                  {category.items.map((item, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 flex-shrink-0" />
+                      <span className="text-sm">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Year Summary Stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Year {currentYear} by the Numbers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 border border-border rounded-lg">
+              <div className="text-2xl font-bold text-green-600">47</div>
+              <p className="text-sm text-muted-foreground">Goals Completed</p>
+            </div>
+            <div className="text-center p-4 border border-border rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">156</div>
+              <p className="text-sm text-muted-foreground">Tasks Finished</p>
+            </div>
+            <div className="text-center p-4 border border-border rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">8</div>
+              <p className="text-sm text-muted-foreground">New Habits Formed</p>
+            </div>
+            <div className="text-center p-4 border border-border rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">23</div>
+              <p className="text-sm text-muted-foreground">Skills Improved</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Next Year Goals Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Goals for {currentYear + 1}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            Based on this year's progress, here are some suggested focus areas for next year:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium">Continue Building On:</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Excellent financial discipline and savings rate</li>
+                <li>• Strong career momentum and skill development</li>
+                <li>• Consistent spiritual practices</li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium">Focus Areas for Growth:</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Expand professional network and speaking opportunities</li>
+                <li>• Diversify investment portfolio</li>
+                <li>• Add strength training to fitness routine</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+@import "tailwindcss";
+
+
+
+:root {
+  /* Color Palette */
+  --color-void: #0a0b0f;        
+  --color-charcoal: #1a1c23;   
+  --color-slate: #2a2d36;       /* warm slate gray */
+  --color-steel: #3d4149;      
+  --color-cream: #f8f6f1;       
+  --color-pearl: #e8e4db;       /* soft pearl */
+  --color-ash: #9ca0a8;        
+  --color-cyan: #00d4ff;        
+  --color-purple: #7c3aed;      
+  --color-coral: #ff6b6b;      
+  --color-mint: #4ade80;        
+
+
+  --bg-primary: #0a0b0f;        /* deep void */
+  --bg-secondary: #141620;      
+  --bg-tertiary: #1e1b2e;       /* soft purple-black */
+  --bg-quaternary: #1a1f2e;     /* subtle blue-gray */
+
+  /* CSS Custom Properties for Tailwind */
+  --background: var(--color-void);
+  --foreground: var(--color-cream);
+  --card: rgba(42, 45, 54, 0.6);
+  --card-foreground: var(--color-cream);
+  --popover: var(--color-charcoal);
+  --popover-foreground: var(--color-cream);
+  --primary: var(--color-cyan);
+  --primary-foreground: var(--color-void);
+  --secondary: var(--color-slate);
+  --secondary-foreground: var(--color-cream);
+  --muted: var(--color-ash);
+  --muted-foreground: rgba(248, 246, 241, 0.7);
+  --accent: var(--color-purple);
+  --accent-foreground: var(--color-cream);
+  --destructive: var(--color-coral);
+  --destructive-foreground: var(--color-cream);
+  --success: var(--color-mint);
+  --success-foreground: var(--color-void);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: var(--color-cyan);
+  --radius: 1rem;
+}
+
+/* Base Styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(77, 222, 128, 0.05) 0%, transparent 50%),
+    linear-gradient(135deg, 
+      var(--bg-primary) 0%, 
+      var(--bg-secondary) 25%, 
+      var(--bg-tertiary) 50%, 
+      var(--bg-quaternary) 75%, 
+      var(--color-charcoal) 100%
+    );
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Subtle animated background particles */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(2px 2px at 20px 30px, rgba(0, 212, 255, 0.1), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(124, 58, 237, 0.1), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(77, 222, 128, 0.1), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 107, 107, 0.05), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(0, 212, 255, 0.05), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: float 20s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Typography Scale */
+h1 {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 600;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+h2 {
+  font-size: 1.875rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--color-cream);
+}
+
+h3 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--color-pearl);
+}
+
+p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+/* Glass Effect with Futuristic Glow */
+.glass-surface {
+  background: rgba(42, 45, 54, 0.4);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 24px rgba(0, 212, 255, 0.05);
+  position: relative;
+}
+
+.glass-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(124, 58, 237, 0.3));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  pointer-events: none;
+}
+
+/* Electric Text Effect */
+.electric-text {
+  color: var(--color-cyan);
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-purple), var(--color-coral));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Neon Glow Effect */
+.neon-glow {
+  box-shadow: 
+    0 0 20px rgba(0, 212, 255, 0.3),
+    0 0 40px rgba(0, 212, 255, 0.1),
+    inset 0 0 20px rgba(0, 212, 255, 0.05);
+}
+
+/* Holographic Effect */
+.holographic {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.1) 0%,
+    rgba(124, 58, 237, 0.1) 25%,
+    rgba(77, 222, 128, 0.1) 50%,
+    rgba(255, 107, 107, 0.1) 75%,
+    rgba(0, 212, 255, 0.1) 100%
+  );
+  background-size: 400% 400%;
+  animation: hologram 8s ease-in-out infinite;
+}
+
+@keyframes hologram {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Custom Scrollbars with Cyan Theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-cyan), var(--color-purple));
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+/* Smooth Transitions with Easing */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Focus Styles with Electric Glow */
+*:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+/* Selection Styles */
+::selection {
+  background-color: rgba(0, 212, 255, 0.3);
+  color: var(--color-cream);
+}
+
+/* Enhanced Card Styles */
+.card {
+  background: rgba(42, 45, 54, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 0 1px rgba(0, 212, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(0, 212, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Button Enhancements */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-purple));
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  color: var(--color-void);
+  font-weight: 500;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(42, 45, 54, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-cream);
+}
+
+.btn-secondary:hover {
+  background: rgba(42, 45, 54, 1);
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+/* Input Enhancements */
+input, textarea, select {
+  background: rgba(42, 45, 54, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+  backdrop-filter: blur(8px);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-cyan);
+  box-shadow: 
+    0 0 0 1px var(--color-cyan),
+    0 0 20px rgba(0, 212, 255, 0.2);
+  background: rgba(42, 45, 54, 0.8);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+/* Progress Bar with Electric Effect */
+.progress-bar {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--color-cyan), var(--color-purple));
+  box-shadow: 
+    0 0 20px rgba(0, 212, 255, 0.4),
+    0 0 40px rgba(0, 212, 255, 0.2);
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Badge Styles */
+.badge-health { background: rgba(255, 107, 107, 0.2); color: var(--color-coral); border: 1px solid rgba(255, 107, 107, 0.3); }
+.badge-spiritual { background: rgba(124, 58, 237, 0.2); color: var(--color-purple); border: 1px solid rgba(124, 58, 237, 0.3); }
+.badge-finance { background: rgba(77, 222, 128, 0.2); color: var(--color-mint); border: 1px solid rgba(77, 222, 128, 0.3); }
+.badge-career { background: rgba(0, 212, 255, 0.2); color: var(--color-cyan); border: 1px solid rgba(0, 212, 255, 0.3); }
+
+/* Animation Utilities */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.4); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.875rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  .glass-surface {
+    backdrop-filter: blur(12px);
+  }
+  
+  body::before {
+    animation-duration: 30s;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --color-cyan: #00e6ff;
+    --color-purple: #9d4edd;
+    --border: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  body::before {
+    animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+  }
+  
+  body::before {
+    display: none;
+  }
+  
+  .glass-surface {
+    background: white;
+    border: 1px solid #ccc;
+    backdrop-filter: none;
+  }
+  
+  .electric-text, .gradient-text {
+    color: #000;
+    text-shadow: none;
+    -webkit-text-fill-color: initial;
+  }
+}
